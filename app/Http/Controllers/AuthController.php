@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+
 use Illuminate\Http\Request;
+
 
 class AuthController extends Controller
 {
@@ -17,6 +20,8 @@ class AuthController extends Controller
     {
         return view('auth.login');
     }
+    
+
     public function register(Request $request)
     {
         $validated = $request->validate([
@@ -32,10 +37,20 @@ class AuthController extends Controller
         return redirect()->route('ninjas.index');
     }
 
-    public function login()
+    public function login(Request $request)
     {
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string'
+        ]);
 
+        if (Auth::attempt($validated)) {
+            $request->session()->regenerate();
+            return redirect()->route('ninjas.index');
+        }
 
+         throw ValidationException::withMessages([
+        'creadentials' => 'Sorry, incorrect creadentials']);
     }
 
     public function logout(Request $request)
